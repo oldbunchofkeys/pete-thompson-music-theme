@@ -1,95 +1,64 @@
 <?php
 
 //theme styles
-function register_theme_styles(){
+function pbt_register_theme_styles(){
     wp_enqueue_style( 'theme-styles', get_template_directory_uri(). "/theme.css", array(), '1.0', 'all');
 }
 
-add_action('wp_enqueue_scripts', 'register_theme_styles');
+add_action('wp_enqueue_scripts', 'pbt_register_theme_styles');
 
+//theme javascript
+function pbt_register_theme_script(){
+    wp_enqueue_script( 'theme-script', get_theme_file_uri("/index.js") , array(), '1.0', true);
+}
+
+add_action('wp_enqueue_scripts', 'pbt_register_theme_script');
 //support featured media for posts
 add_theme_support('post-thumbnails');
 
-// the loop - blog post excerpts
-function display_post_excerpts() {
-    if (have_posts()) :
-        while (have_posts()) :
-            the_post();
-            ?>
-            <article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
-                <header class="entry-header">
-                    <?php the_title('<h3 class="entry-title">', '</h3>'); ?>
-                </header><!-- .entry-header -->
-
-                <div class="entry-content">
-                    <?php 
-                        // Display the post excerpt
-                        the_excerpt(); 
-                    ?>
-
-                </div><!-- .entry-content -->
-                <a href="<?php get_post_permalink() ?>"></a>
-
-                <footer class="entry-footer">
-                    <!-- Entry footer content -->
-                </footer><!-- .entry-footer -->
-            </article><!-- #post-<?php the_ID(); ?> -->
-            <?php
-        endwhile;
-    else :
-        // If no content, include the "No posts found" template part
-        get_template_part('template-parts/content', 'none');
-    endif;
-}
-
-// the loop - most recent 4 blog post excerpts
-function display_recent_post_excerpts() {
+function pbt_get_page_data_for_menu() {
     $args = array(
-        'post_type' => 'post',
-        'posts_per_page' => 4 // Limit to 4 posts
+        'post_type' => 'page', // Only retrieve pages
+        'posts_per_page' => -1 // Retrieve all pages
     );
-
-    $query = new WP_Query($args);
-
-    if ($query->have_posts()) :
-        while ($query->have_posts()) :
-            $query->the_post();
-            ?>
-            <a class="no-underline" href="<?php echo get_post_permalink() ?>">
-                <?php echo get_the_post_thumbnail() ?>
-                <article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
-                    <header class="entry-header">
-                        <?php the_title('<h3 class="entry-title">', '</h3>'); ?>
-                    </header>
-                    <div class="entry-content">
-                        <?php 
-                            the_excerpt(); 
-                        ?>
-                    </div>
-                    <p>Read post</p>
-                </article><!-- #post-<?php the_ID(); ?> -->
-            </a>
-            <?php
+    
+    // Instantiate custom query
+    $custom_query = new WP_Query($args);
+    
+    // Output custom query loop
+    if ($custom_query->have_posts()) :
+        while ($custom_query->have_posts()) : $custom_query->the_post();
+            // Your loop code here
+            // Example: Display page title and content
+            if (strpos(get_the_title(), "Pete Thompson Music") === false) {
+                ?>
+                <li class="<?php if (rtrim(get_the_permalink(), '/') === pbt_get_current_page_url()) {
+                    ?>current-page<?php
+                } ?>"><a href="<?php the_permalink();?>"><?php the_title(); ?></a></li>
+                <?php
+            }
         endwhile;
-        wp_reset_postdata(); // Reset post data
     else :
-        // If no content, include the "No posts found" template part
-        get_template_part('template-parts/content', 'none');
+        // If no pages are found
+        echo 'No pages found';
     endif;
+    
+    // Reset post data
+    wp_reset_postdata();
 }
-function display_single_post() {
-    if ( have_posts() ) : while ( have_posts() ) : the_post(); ?>
-                <article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
-                    <header class="entry-header">
-                        <?php the_title('<h1 class="entry-title">', '</h1>'); ?>
-                    </header>
+function pbt_get_current_page_url() {
+    global $wp;
+    return home_url( $wp->request );
+}
 
-                    <div class="entry-content ">
-                        <?php 
-                            // Display the post content
-                            the_content(); 
-                        ?>
-                    </div>
-                </article>
-    <?php endwhile; endif;
+
+// function pbt_the_post_name() {
+//     //works for posts AND pages
+//     global $post;
+//     echo $post->post_name;
+// }
+
+function site_features() {
+    add_theme_support('title-tag');
 }
+add_action('after_setup_theme', 'site_features');
