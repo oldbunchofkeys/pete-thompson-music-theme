@@ -1,12 +1,11 @@
-<?php 
-    global $post;
-    $post_slug = $post->post_name;
-?>
+
 <?php get_header(); ?>
-    <main class="container single-post <?php echo $post_slug ?>">
+    <main class="container single-post ">
         <section class="single__content">
-            <?php display_single_post(); ?>
+            
         </section>
-        
     </main>
+    <script>
+        console.log('template: single.php');
+    </script>
 <?php get_footer(); ?>
